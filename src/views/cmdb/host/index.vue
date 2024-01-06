@@ -84,6 +84,7 @@
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
   import useLoading from '@/hooks/loading';
   import { Pagination } from '@/types/global';
+  import { HostRecord, HostParams } from '@/types/cmdb';
 
   const { loading, setLoading } = useLoading(true);
   // 表格密度 框架自带的值
@@ -156,8 +157,10 @@
     },
   ]);
   // 获取数据  TODO: 这里没搞通
-  const renderData = ref([]);
-  const fetchData = async () => {
+  const renderData = ref<HostRecord[]>([]);
+  const fetchData = async (
+    params: HostParams = { current: 1, pageSize: 20 },
+  ) => {
     setLoading(true);
     try {
       renderData.value = [
