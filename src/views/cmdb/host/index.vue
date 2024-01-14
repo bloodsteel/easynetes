@@ -85,6 +85,10 @@
   import useLoading from '@/hooks/loading';
   import { Pagination } from '@/types/global';
   import { HostRecord, HostParams } from '@/types/cmdb';
+  import { queryCmdbData } from '@/api/cmdb';
+
+
+// 数据
 
   const { loading, setLoading } = useLoading(true);
   // 表格密度 框架自带的值
@@ -157,42 +161,23 @@
     },
   ]);
   // 获取数据  TODO: 这里没搞通
-  const renderData = ref<HostRecord[]>([]);
+  // var renderData = ref<HostRecord[]>([]);
+  let renderData: HostRecord[] = [] as HostRecord[];
   const fetchData = async (
     params: HostParams = { current: 1, pageSize: 20 },
   ) => {
     setLoading(true);
     try {
-      renderData.value = [
-        {
-          id: 0,
-          hostID: 'awefw',
-          hostName: 'xxxx',
-          hostType: '虚拟机',
-          createdTime: '2024-1-1',
-          status: '已上线',
-        },
-        {
-          id: 1,
-          hostID: 'awefw',
-          hostName: 'xxxx',
-          hostType: '虚拟机',
-          createdTime: '2024-1-2',
-          status: '已下线',
-        },
-        {
-          id: 2,
-          hostID: 'awefw',
-          hostName: 'xxxx',
-          hostType: '虚拟机',
-          createdTime: '2024-1-3',
-          status: '已上线',
-        },
-      ];
+      queryCmdbData().then((res) => {
+        renderData = res.data.data;
+      }).catch((err)=>{
+        console.log(err);
+      });
       pagination.current = 1;
       pagination.total = 3;
     } catch (err) {
       // 错误处理
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -202,6 +187,10 @@
   const onPageChange = (current: number) => {
     fetchData({ ...basePagination, current });
   };
+  // 搜索
+  const search = () => {
+    console.log('searching...');
+  }
 </script>
 
 <script lang="ts">

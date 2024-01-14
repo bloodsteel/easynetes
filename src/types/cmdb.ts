@@ -1,10 +1,34 @@
+// export enum hostType {
+//   // 虚拟机
+//   VM = '虚拟机',
+//   // Bare Metal
+//   BM = '裸金属',
+//   // 云主机
+//   CloudHost = '云主机',
+//   // 容器
+//   Container = '容器',
+// }
+
+// export enum hostStatus {
+//   online = '已上线',
+//   created = '已创建',
+//   creating = '创建中',
+//   running = '运行中',
+//   offline = '已下线',
+// }
+
 export interface HostRecord {
   id: number;
   hostID: string;
   hostName: string;
-  hostType: '虚拟机' | '裸金属' | '云主机' | '容器';
+  hostIP: string;
+  hostSSHPort: number;
+  // hostType: HostType;
+  hostType: string;
   createdTime: string;
-  status: '已上线' | '已创建' | '创建中' | '运行中' | '已下线';
+  updatedTime: string;
+  // status: HostStatus;
+  status: string;
 }
 
 export interface HostParams extends Partial<HostRecord> {
