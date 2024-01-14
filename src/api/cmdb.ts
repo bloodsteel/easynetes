@@ -1,16 +1,16 @@
-import axios from 'axios';
-
-import { HostRecord } from '@/types/cmdb'
+import axios, { AxiosRequestConfig } from 'axios';
+import { HostRecord } from '@/types/cmdb';
 
 export interface HostDataRecord {
-    status: 'ok',
-    msg: '请求成功',
-    code: 20000,
-    data: HostRecord[],
+	total: number,
+	data: HostRecord[]
 }
- 
 
-export function queryCmdbData() {
-    return axios.get<HostDataRecord>('/api/cmdb');
-  }
-  
+export function queryCmdbData(params: any) {
+	// const config: AxiosRequestConfig<any> = {
+	// 	params: params,
+	// };
+	console.log("params", params);
+	// return axios.get<HostDataRecord>('/api/cmdb', config);
+	return axios.get<HostDataRecord>('/api/cmdb', { params });
+}
