@@ -1,0 +1,37 @@
+logging:
+  format: "json" # text 或者 json
+  path: "" # 不指定则输出到/dev/stdout, 并且rotate相关都不生效
+  level: "debug" # debug, info, warn, error, fatal, none
+  max_age: 30 # 30 days
+  max_size: 104857600 # 100MB
+  max_backups: 1000 # 最大保留日志数
+
+server:
+  bind_address: "127.0.0.1" # http server监听地址
+  insecure_port: "8080" # http 端口
+  secure_port: "8443" # https 端口, 默认不启用
+  read_timeout: 10000 # millisecond
+  write_timeout: 10000 # millisecond
+  termination_timeout: 35 # second
+  secure_key: "" # https 需要配置的, 注意不能随便配置
+  secure_cert: ""
+  secure_host: "" # 证书host
+
+database:
+  host: "127.0.0.1"
+  port: "3306"
+  user: "root"
+  password: "123"
+  database_name: "easynetes"
+  max_idle_conns: 6
+  max_open_conns: 30
+  conn_max_lifetime: 1800 # seconds, 过期连接不会重用
+
+security:
+  admin_user: "easynetes" # 超级管理员账号, 第一次启动的时候自动创建
+  admin_password: "easynetes@110NB" # 超级管理员密码, 第一次启动的时候自动创建, 后续通过web页面修改该密码
+  admin_email: "admin@easynetes.org" # 超级管理员邮箱, 第一次启动的时候自动创建需要
+  admin_phone: "13012341234" # 超级管理员电话, 第一次启动的时候自动创建需要
+  # secret_key: "" # 用来生成jwt签名, 不能泄露
+  token_expire_time: 3600 # seconds, token/jwt 过期时间
+  token_toleration_time: 1200 # seconds, token/jwt 容忍时间, 容忍时间内可通过接口直接获取新的, 否则需要用户名密码重新获取

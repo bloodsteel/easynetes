@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"github.com/bloodsteel/easynetes/cmd"
+	"github.com/bloodsteel/easynetes/pkg/log"
+)
 
 func main() {
-	fmt.Println("easynetes api!")
+	EasynetesAPICmd := cmd.EasynetesAPI()
+	if err := EasynetesAPICmd.Execute(); err != nil {
+		log.Errorf("exectu error: %v", err)
+	}
 }
