@@ -13,6 +13,7 @@ import (
 )
 
 var daoSet = wire.NewSet(
+	// db.NewRepository,
 	provideDatabase,
 	user.ProvideUserDao,
 	host.ProvideHostDao,

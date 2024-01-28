@@ -7,7 +7,7 @@ logging:
   max_backups: 1000 # 最大保留日志数
 
 server:
-  bind_address: "127.0.0.1" # http server监听地址
+  bind_address: "0.0.0.0" # http server监听地址
   insecure_port: "8080" # http 端口
   secure_port: "8443" # https 端口, 默认不启用
   read_timeout: 10000 # millisecond
@@ -22,12 +22,20 @@ db:
     host: "127.0.0.1"
     port: "3306"
     user: "root"
-    password: "123"
+    password: "mysql_password"
     database_name: "easynetes"
     max_idle_conns: 6
     max_open_conns: 30
     conn_max_lifetime: 1800 # seconds, 过期连接不会重用
-
+database:
+  host: "127.0.0.1"
+  port: "3306"
+  user: "root"
+  password: "mysql_password"
+  database_name: "easynetes"
+  max_idle_conns: 6
+  max_open_conns: 30
+  conn_max_lifetime: 1800 # seconds, 过期连接不会重用
 security:
   admin_user: "easynetes" # 超级管理员账号, 第一次启动的时候自动创建
   admin_password: "easynetes@110NB" # 超级管理员密码, 第一次启动的时候自动创建, 后续通过web页面修改该密码

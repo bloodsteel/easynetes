@@ -6,7 +6,7 @@
 			<a-row style="margin-bottom: 16px">
 				<a-col :span="12">
 					<a-space>
-						<a-button type="primary">
+						<a-button type="primary" @click="addAsset">
 							<template #icon>
 								<icon-plus />
 							</template>
@@ -38,8 +38,8 @@
 				</a-col>
 			</a-row>
 			<!-- 表格 -->
-			<a-table row-key="id" :loading="loading" :pagination="false" :columns="columns" :data="renderData" :bordered="false"
-				:size="size" @page-change="onPageChange">
+			<a-table row-key="id" :loading="loading" :pagination="false" :columns="columns" :data="renderData"
+				:bordered="false" :size="size" @page-change="onPageChange">
 				<!-- 索引 slot -->
 				<template #index="{ rowIndex }">
 					{{ rowIndex + 1 + (pagination.current - 1) * pagination.pageSize }}
@@ -60,11 +60,44 @@
 			</a-table>
 			<!-- 分页组件 -->
 			<a-pagination :total="pagination.total ? pagination.total : 0" v-model:current="pagination.current"
-				v-model:page-size="pagination.pageSize" show-jumper show-total show-page-size @change="onPageChange"
+				v-model:page-size="pagination.pageSize" show-jumper show-total show-page-size
+				:page-size-options="[2, 3, 5, 10, 20, 30, 40, 50]" @change="onPageChange"
 				@page-size-change="onPageSizeChange">
-
 			</a-pagination>
 		</a-card>
+		<a-drawer :visible="state.formVisible" :width="800" @ok="handleOk(form)" @cancel="handleCancel" unmountOnClose
+			:footer="true">
+			<template #header>
+				header
+				<a-space>
+					<a-button type="primary" style="z-index: 2000" @cilck="handleOk(form)">Submit</a-button>
+				</a-space>
+			</template>
+			<!-- <template #title> -->
+			<!-- Title -->
+			<!-- 这里的按钮不生效 -->
+			<!-- <a-button type="primary" style="z-index: 2000" @cilck="handleOk(form)">Submit</a-button> -->
+			<!-- </template> -->
+
+			<div>
+				<!-- handleSubmit -->
+				<!-- @submit="handleOk(form)" -->
+				<a-form :model="form" :style="{ width: '600px' }">
+					<a-form-item field="name" tooltip="Please enter username" label="Username">
+						<a-input v-model="form.name" placeholder="please enter your username..." />
+					</a-form-item>
+					<a-form-item field="post" label="Post">
+						<a-input v-model="form.post" placeholder="please enter your post..." />
+					</a-form-item>
+					<a-form-item field="isRead">
+						<a-checkbox v-model="form.isRead"> I have read the manual </a-checkbox>
+					</a-form-item>
+					<!-- <a-form-item>
+						<a-button html-type="submit">Submit</a-button>
+					</a-form-item> -->
+				</a-form>
+			</div>
+		</a-drawer>
 	</div>
 </template>
 
@@ -77,7 +110,9 @@ import { HostRecord, HostParams } from '@/types/cmdb';
 import { queryCmdbData } from '@/api/cmdb';
 
 
-
+const state = reactive({
+	formVisible: false,
+});
 // 数据
 const { loading, setLoading } = useLoading(true);
 // 表格密度 框架自带的值
@@ -186,8 +221,13 @@ const onPageSizeChange = (pageSize: number) => {
 		pagination.total = 0
 	}
 	console.log("pageSize is 1: ", pagination);
+	// 如果当前页大于1
 	if (pagination.current > 1) {
-		if (((pagination.current - 1) * pagination.pageSize) > pagination.total) {
+		// 如果总数 
+		// if (((pagination.current - 1) * pagination.pageSize) > pagination.total) {
+		// 	pagination.current = 1
+		// }
+		if ((pagination.total / pagination.pageSize) < pagination.current) {
 			pagination.current = 1
 		}
 	}
@@ -203,6 +243,29 @@ const refresh = () => {
 // 搜索
 const search = () => {
 	console.log('searching...');
+}
+const form = reactive({
+	name: '',
+	post: '',
+	isRead: false,
+});
+const handleSubmit = (data: any) => {
+	console.log("data is ", data);
+};
+// 表单相关的函数
+const addAsset = () => {
+	console.log("addAsset");
+	state.formVisible = true;
+}
+// 
+const handleOk = (data: any) => {
+	console.log("handleOk")
+	console.log("data is", data);
+	state.formVisible = false;
+}
+const handleCancel = () => {
+	console.log("handleCancel")
+	state.formVisible = false;
 }
 </script>
 
