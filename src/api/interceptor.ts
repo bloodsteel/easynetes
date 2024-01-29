@@ -41,6 +41,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response: AxiosResponse<HttpResponse>) => {
     const res = response.data;
+    console.log("res:", res);
     // if the custom code is not 20000, it is judged as an error.
     // 如果编码不是20000 ，首先弹出报错信息， 然后判断是否是token过期
     if (res.code !== 20000) {

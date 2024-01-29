@@ -50,3 +50,4 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+.hf_env.sh

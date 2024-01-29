@@ -61,7 +61,12 @@ type (
 		MaxOpenConns    int           `yaml:"max_open_conns" mapstructure:"max_open_conns"`
 		ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime" mapstructure:"conn_max_lifetime"`
 	}
-
+	DB struct {
+		Type        string   `mapstructure:"type" json:"type" yaml:"type"`
+		TablePrefix string   `mapstructure:"table-prefix" json:"tablePrefix" yaml:"table-prefix"`
+		Mysql       Database `yaml:"mysql,omitempty"`
+		// Sqlite3     Sqlite3 `yaml:"sqlite3,omitempty"`
+	}
 	// Cache 缓存相关配置
 	Cache struct {
 	}
