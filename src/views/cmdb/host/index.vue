@@ -46,16 +46,20 @@
 				</template>
 				<!-- 状态 slot -->
 				<template #status="{ record }">
-					<span v-if="record.status === 'offline'" class="circle"></span>
+					<!--<span v-if="record.status === 'offline'" class="circle"></span>-->
+					<span v-if="record.status === false" class="circle"></span>
 					<span v-else class="circle pass"></span>
 					{{ '已上线' }}
+
 				</template>
 				<!-- 操作 slot -->
-				<template #operations>
-					<a-button type="text" size="small">一般</a-button>
-					<a-button type="text" size="small" status="success">成功</a-button>
-					<a-button type="text" size="small" status="warning">警告</a-button>
-					<a-button type="text" size="small" status="danger">危险</a-button>
+				<template #operations="{ record }">
+					<a-button type="text" size="small" @click="updateAsset(record)">编辑</a-button>
+					<!-- <a-button type="text" size="small" status="success">成功</a-button>
+					<a-button type="text" size="small" status="warning">警告</a-button> -->
+					<a-popconfirm content="确认删除吗？" type="error" @ok="deleteAsset(record.id)">
+						<a-button type="text" size="small" status="danger">删除</a-button>
+					</a-popconfirm>
 				</template>
 			</a-table>
 			<!-- 分页组件 -->
@@ -65,12 +69,12 @@
 				@page-size-change="onPageSizeChange">
 			</a-pagination>
 		</a-card>
-		<a-drawer :visible="state.formVisible" :width="800" @ok="handleOk(form)" @cancel="handleCancel" unmountOnClose
-			:footer="true">
+		<a-drawer :visible="state.formVisible" :width="800" @ok="handleOk(state.formData)" @cancel="handleCancel"
+			unmountOnClose :footer="true">
 			<template #header>
 				header
 				<a-space>
-					<a-button type="primary" style="z-index: 2000" @cilck="handleOk(form)">Submit</a-button>
+					<a-button type="primary" style="z-index: 2000" @cilck="handleOk(state.formData)">Submit</a-button>
 				</a-space>
 			</template>
 			<!-- <template #title> -->
@@ -82,15 +86,35 @@
 			<div>
 				<!-- handleSubmit -->
 				<!-- @submit="handleOk(form)" -->
-				<a-form :model="form" :style="{ width: '600px' }">
-					<a-form-item field="name" tooltip="Please enter username" label="Username">
-						<a-input v-model="form.name" placeholder="please enter your username..." />
+				<a-form ref="formRef" :model="state.formData" :style="{ width: '600px' }">
+					<a-form-item field="hostName" tooltip="hostname" label="主机名">
+						<a-input v-model="state.formData.hostName" placeholder="hostName" />
 					</a-form-item>
-					<a-form-item field="post" label="Post">
-						<a-input v-model="form.post" placeholder="please enter your post..." />
+					<a-form-item field="hostIP" label="ip地址">
+						<a-input v-model="state.formData.hostIP" placeholder="ip" />
 					</a-form-item>
-					<a-form-item field="isRead">
-						<a-checkbox v-model="form.isRead"> I have read the manual </a-checkbox>
+					<a-form-item field="hostType" label="主机类型">
+						<a-select :style="{ width: '320px' }" v-model="state.formData.hostType"
+							placeholder="Please select ..." allow-clear>
+							<a-option>Linux</a-option>
+							<a-option>Windows</a-option>
+							<a-option>Switch</a-option>
+							<a-option>Router</a-option>
+						</a-select>
+					</a-form-item>
+					<a-form-item field="userName" label="用户名">
+						<a-input v-model="state.formData.userName" placeholder="用户名" />
+					</a-form-item>
+					<a-form-item field="status">
+						<a-checkbox v-model="state.formData.status">是否上线</a-checkbox>
+					</a-form-item>
+					<a-form-item field="hostSSHPort" label="ssh端口">
+						<a-input-number v-model="state.formData.hostSSHPort" :style="{ width: '320px' }" placeholder="ssh端口"
+							allow-clear hide-button></a-input-number>
+					</a-form-item>
+					<a-form-item field="comment" label="备注">
+						<a-textarea v-model="state.formData.comment" placeholder="Please enter something"
+							:max-length="{ length: 256, errorOnly: true }" allow-clear show-word-limit />
 					</a-form-item>
 					<!-- <a-form-item>
 						<a-button html-type="submit">Submit</a-button>
@@ -102,16 +126,32 @@
 </template>
 
 <script lang="ts" setup>
+import { AxiosResponse } from 'axios';
 import { computed, ref, reactive, onMounted } from 'vue';
 import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
 import useLoading from '@/hooks/loading';
 import { Pagination } from '@/types/global';
 import { HostRecord, HostParams } from '@/types/cmdb';
-import { queryCmdbData } from '@/api/cmdb';
+import { HostDataRecord, queryCmdbData, createCmdbData } from '@/api/cmdb';
+// 
+import { HostDataToCreate, HostItemRecord, deleteCmdbData, updateCmdbData } from '@/api/cmdb';
+import { FormInstance } from '@arco-design/web-vue/es/form';
+import { Notification } from '@arco-design/web-vue';
 
+const defaultHost: HostRecord = {
+	id: 0,
+	hostName: '',
+	hostIP: '',
+	hostType: 'Linux',
+	userName: '',
+	status: true,
+	comment: '',
+	hostSSHPort: 22,
+}
 
 const state = reactive({
 	formVisible: false,
+	formData: { ...defaultHost },
 });
 // 数据
 const { loading, setLoading } = useLoading(true);
@@ -172,7 +212,7 @@ const columns = computed<TableColumnData[]>(() => [
 	},
 	{
 		title: '创建时间',
-		dataIndex: 'createdTime',
+		dataIndex: 'createTime',
 	},
 	{
 		title: '主机状态',
@@ -190,10 +230,20 @@ const renderData = ref<HostRecord[]>([]);
 const fetchData = async () => {
 	setLoading(true);
 	// pagination
-	queryCmdbData({ current: pagination.current, pageSize: pagination.pageSize }).then((res) => {
+	queryCmdbData({ current: pagination.current, pageSize: pagination.pageSize }).then((res: HostDataRecord) => {
+		// https://deepinout.com/typescript/typescript-questions/280_typescript_how_to_use_a_type_for_the_response_from_axiosget.html : TypeScript 如何使用 axios.get 的返回类型
+		// 这里的例子，也不符合预期
+		// https://lembdadev.com/posts/http-request-axios-typescript : 有 post 带类型的例子
+		// https://bobbyhadz.com/blog/typescript-http-request-axios#making-http-get-requests-with-axios-in-typescript : 
+		// 这里的是使用的 try 的方式, 有一个公共的 api , 即里面请求的接口，可以直接获取到数据
+		// https://axios-http.com/docs/example : 官网的例子，没有类型
+		// https://upmostly.com/typescript/how-to-use-axios-in-your-typescript-apps : 有带类型的例子，不过也是 try 的形式
 		console.log("the res is ", res);
-		pagination.total = res.data.total;
-		renderData.value = res.data.data;
+		console.log("the res.data is ", res.data);
+		// pagination.total = res.data.total;
+		pagination.total = res.total;
+		// renderData.value = res.data.data;
+		renderData.value = res.data;
 	}).catch((err) => {
 		console.log("get api error", err);
 	}).finally(() => {
@@ -244,11 +294,13 @@ const refresh = () => {
 const search = () => {
 	console.log('searching...');
 }
-const form = reactive({
-	name: '',
-	post: '',
-	isRead: false,
-});
+
+
+
+// const form = reactive({
+// 	...defaultHost
+// });
+const formRef = ref<FormInstance>();
 const handleSubmit = (data: any) => {
 	console.log("data is ", data);
 };
@@ -257,15 +309,60 @@ const addAsset = () => {
 	console.log("addAsset");
 	state.formVisible = true;
 }
+const updateAsset = (data: HostRecord) => {
+	console.log("updateAsset, data is ", data);
+	state.formData = data;
+	state.formVisible = true;
+}
+const deleteAsset = (id: number) => {
+	console.log("deleteAsset, id is ", id);
+	deleteCmdbData(id).then((res) => {
+		// 增加删除成功的通知消息
+		Notification.success({
+			title: '删除成功',
+			content: '',
+			closable: true,
+			style: { width: '500px' }
+		});
+		fetchData();
+	}).catch((err) => {
+		console.log(err);
+	}).finally(() => {
+
+	});
+}
 // 
 const handleOk = (data: any) => {
 	console.log("handleOk")
 	console.log("data is", data);
-	state.formVisible = false;
+	if (data.id === 0) {
+		createCmdbData(data).then((res) => {
+			console.log("the create res is", res);
+			fetchData();
+			formRef.value?.resetFields();
+			state.formVisible = false;
+		}).catch((err) => {
+			console.log("get api error", err);
+		}).finally(() => {
+			setLoading(false);
+		})
+	} else {
+		updateCmdbData(data).then((res) => {
+			formRef.value?.resetFields();
+			state.formVisible = false;
+		}).catch((err) => {
+			console.log("get api error", err);
+		}).finally(() => {
+			setLoading(false);
+		})
+	}
+
 }
 const handleCancel = () => {
-	console.log("handleCancel")
+	console.log("handleCancel");
+	formRef.value?.resetFields();
 	state.formVisible = false;
+	state.formData = defaultHost;
 }
 </script>
 
