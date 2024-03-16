@@ -8,5 +8,5 @@ import './service';
 import './cmdb';
 
 Mock.setup({
-  timeout: '600-1000',
+	timeout: '600-1000',
 });

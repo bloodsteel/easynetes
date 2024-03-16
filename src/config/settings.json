@@ -1,11 +1,11 @@
 {
-  "theme": "light",
-  "navbar": true,
-  "menu": true,
-  "topMenu": false,
-  "hideMenu": false,
-  "menuCollapse": false,
-  "footer": true,
-  "menuWidth": 220,
-  "device": "desktop"
+	"theme": "light",
+	"navbar": true,
+	"menu": true,
+	"topMenu": false,
+	"hideMenu": false,
+	"menuCollapse": false,
+	"footer": true,
+	"menuWidth": 220,
+	"device": "desktop"
 }

@@ -1,10 +1,11 @@
 import Mock from 'mockjs';
 // import fs from 'fs';
-import setupMock, { successResponseWrap, successResponseWrapForList } from '@/utils/setup-mock';
+// successResponseWrapForList
+import setupMock, { successResponseWrap } from '@/utils/setup-mock';
 
 // import { HostRecord, HostType,HostStatus } from '@/types/cmdb'
-import { HostRecord } from '@/types/cmdb'
-import { throttle } from 'lodash';
+import { HostRecord } from '@/types/cmdb';
+// import { throttle } from 'lodash';
 
 const hostJson = `[{
 "id": 1,
@@ -336,66 +337,65 @@ const hostJson = `[{
 								"updatedTime": "2023-12-30 15:30:00",
 									"status": "在线"
 }
-]`
+]`;
 
-const hostJsonData: HostRecord[] = JSON.parse(hostJson)
+const hostJsonData: HostRecord[] = JSON.parse(hostJson);
 
 const cmdbHosts: HostRecord[] = [
 	{
 		id: 1,
 		hostID: 'host-1-1',
+		userName: 'centos',
 		hostName: 'mysql-01.dev.com',
 		hostIP: '192.168.1.1',
 		hostSSHPort: 22,
 		hostType: '裸金属',
 		createdTime: '2023-12-23 15:30:00',
 		updatedTime: '2023-12-23 15:30:00',
-		status: '在线',
+		status: true,
 	},
 	{
 		id: 2,
-		hostID: "host-1-2",
-		hostName: "mysql-2.dev.com",
-		hostIP: "192.168.1.2",
+		hostID: 'host-1-2',
+		userName: 'centos',
+		hostName: 'mysql-2.dev.com',
+		hostIP: '192.168.1.2',
 		hostSSHPort: 22,
-		hostType: "裸金属",
-		createdTime: "2023-12-2 15: 30:00",
-		updatedTime: "2023-12-2 15: 30:00",
-		status: "在线"
+		hostType: '裸金属',
+		createdTime: '2023-12-2 15: 30:00',
+		updatedTime: '2023-12-2 15: 30:00',
+		status: true,
 	},
 	{
 		id: 3,
-		hostID: "host-1-3",
-		hostName: "mysql-3.dev.com",
-		hostIP: "192.168.1.3",
+		hostID: 'host-1-3',
+		userName: 'centos',
+		hostName: 'mysql-3.dev.com',
+		hostIP: '192.168.1.3',
 		hostSSHPort: 22,
-		hostType: "裸金属",
-		createdTime: "2023-12-3 15:30:00",
-		updatedTime: "2023-12-3 15:30:00",
-		status: "在线"
+		hostType: '裸金属',
+		createdTime: '2023-12-3 15:30:00',
+		updatedTime: '2023-12-3 15:30:00',
+		status: true,
 	},
-]
+];
 // const jsonStr = fs.readFileSync('cmdb/hosts.json', 'utf-8')
 // const jsonData = JSON.parse(jsonStr);
-// cmdbHosts.concat(jsonData);
-
+cmdbHosts.concat(hostJsonData);
 
 setupMock({
 	setup() {
-		Mock.mock(new RegExp('/api/cmdb'), (params: {
-			url: string
-		}) => {
+		Mock.mock(new RegExp('/api/cmdb'), (params: { url: string }) => {
 			// const pageSize = params.pageSize;
 			const urlArray = params.url.split('?');
 			const paramArr = urlArray[1].split('&');
 			const paramObj: Record<string, string> = {};
-			paramArr.forEach(item => {
-				const theKVArr = item.split("=");
+			paramArr.forEach((item) => {
+				const theKVArr = item.split('=');
 				const k = theKVArr[0];
 				const v = theKVArr[1];
 				paramObj[k] = v;
-			})
-			console.log("/api/cmdb", paramObj);
+			});
 			const current = Number(paramObj.current);
 			const pageSize = Number(paramObj.pageSize);
 			let theOffset = 0;
@@ -407,8 +407,8 @@ setupMock({
 			return successResponseWrap({
 				total: hostJsonData.length,
 				data: hostJsonData.slice(theOffset, sliceEnd),
-			})
+			});
 			// return successResponseWrapForList(cmdbHosts.length, cmdbHosts);
 		});
-	}
+	},
 });

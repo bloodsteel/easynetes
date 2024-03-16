@@ -6,29 +6,29 @@ import { addEventListen, removeEventListen } from '@/utils/event';
 const WIDTH = 992; // https://arco.design/vue/component/grid#responsivevalue
 
 function queryDevice() {
-  const rect = document.body.getBoundingClientRect();
-  return rect.width - 1 < WIDTH;
+	const rect = document.body.getBoundingClientRect();
+	return rect.width - 1 < WIDTH;
 }
 
 // 这里应该是自适应响应式相关的
 // 只有在默认布局的视图中引用
 export default function useResponsive(immediate?: boolean) {
-  const appStore = useAppStore();
-  function resizeHandler() {
-    if (!document.hidden) {
-      const isMobile = queryDevice();
-      appStore.toggleDevice(isMobile ? 'mobile' : 'desktop');
-      appStore.toggleMenu(isMobile);
-    }
-  }
-  const debounceFn = useDebounceFn(resizeHandler, 100);
-  onMounted(() => {
-    if (immediate) debounceFn();
-  });
-  onBeforeMount(() => {
-    addEventListen(window, 'resize', debounceFn);
-  });
-  onBeforeUnmount(() => {
-    removeEventListen(window, 'resize', debounceFn);
-  });
+	const appStore = useAppStore();
+	function resizeHandler() {
+		if (!document.hidden) {
+			const isMobile = queryDevice();
+			appStore.toggleDevice(isMobile ? 'mobile' : 'desktop');
+			appStore.toggleMenu(isMobile);
+		}
+	}
+	const debounceFn = useDebounceFn(resizeHandler, 100);
+	onMounted(() => {
+		if (immediate) debounceFn();
+	});
+	onBeforeMount(() => {
+		addEventListen(window, 'resize', debounceFn);
+	});
+	onBeforeUnmount(() => {
+		removeEventListen(window, 'resize', debounceFn);
+	});
 }

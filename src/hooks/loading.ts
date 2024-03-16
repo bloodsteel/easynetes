@@ -8,16 +8,16 @@ import { ref } from 'vue';
 // https://arco.design/vue/component/list#API  列表加载中
 // 等等。。
 export default function useLoading(initValue = false) {
-  const loading = ref(initValue);
-  const setLoading = (value: boolean) => {
-    loading.value = value;
-  };
-  const toggle = () => {
-    loading.value = !loading.value;
-  };
-  return {
-    loading,
-    setLoading,
-    toggle,
-  };
+	const loading = ref(initValue);
+	const setLoading = (value: boolean) => {
+		loading.value = value;
+	};
+	const toggle = () => {
+		loading.value = !loading.value;
+	};
+	return {
+		loading,
+		setLoading,
+		toggle,
+	};
 }
