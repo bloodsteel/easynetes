@@ -18,20 +18,22 @@
 // }
 
 export interface HostRecord {
-  id: number;
-  hostID: string;
-  hostName: string;
-  hostIP: string;
-  hostSSHPort: number;
-  // hostType: HostType;
-  hostType: string;
-  createdTime: string;
-  updatedTime: string;
-  // status: HostStatus;
-  status: string;
+	id?: number;
+	hostID?: string;
+	hostName: string;
+	hostIP: string;
+	userName: string;
+	hostSSHPort: number;
+	// hostType: HostType;
+	hostType: string;
+	createdTime?: string;
+	updatedTime?: string;
+	// status: HostStatus;
+	status: boolean;
+	comment?: string;
 }
 
 export interface HostParams extends Partial<HostRecord> {
-  current: number;
-  pageSize: number;
+	current: number;
+	pageSize: number;
 }

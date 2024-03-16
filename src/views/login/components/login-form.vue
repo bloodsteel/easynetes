@@ -1,165 +1,155 @@
 <template>
-  <div class="login-form-wrapper">
-    <div class="login-form-title">{{ '登录 Easynetes Newbee' }}</div>
-    <div class="login-form-sub-title">{{ '登录 Easynetes Newbee' }}</div>
-    <div class="login-form-error-msg">{{ errorMessage }}</div>
-    <a-form
-      ref="loginForm"
-      :model="userInfo"
-      class="login-form"
-      layout="vertical"
-      @submit="handleSubmit"
-    >
-      <a-form-item
-        field="username"
-        :rules="[{ required: true, message: '用户名不能为空' }]"
-        :validate-trigger="['change', 'blur']"
-        hide-label
-      >
-        <a-input v-model="userInfo.username" :placeholder="'用户名：admin'">
-          <template #prefix>
-            <icon-user />
-          </template>
-        </a-input>
-      </a-form-item>
-      <a-form-item
-        field="password"
-        :rules="[{ required: true, message: '密码不能为空' }]"
-        :validate-trigger="['change', 'blur']"
-        hide-label
-      >
-        <a-input-password
-          v-model="userInfo.password"
-          :placeholder="'密码：admin'"
-          allow-clear
-        >
-          <template #prefix>
-            <icon-lock />
-          </template>
-        </a-input-password>
-      </a-form-item>
-      <a-space :size="16" direction="vertical">
-        <div class="login-form-password-actions">
-          <a-checkbox
-            checked="rememberPassword"
-            :model-value="loginConfig.rememberPassword"
-            @change="setRememberPassword as any"
-          >
-            {{ '记住密码' }}
-          </a-checkbox>
-          <a-link>{{ '忘记密码' }}</a-link>
-        </div>
-        <a-button type="primary" html-type="submit" long :loading="loading">
-          {{ '登录' }}
-        </a-button>
-        <a-button type="text" long class="login-form-register-btn">
-          {{ '注册账号' }}
-        </a-button>
-      </a-space>
-    </a-form>
-  </div>
+	<div class="login-form-wrapper">
+		<div class="login-form-title">{{ '登录 Easynetes Newbee' }}</div>
+		<div class="login-form-sub-title">{{ '登录 Easynetes Newbee' }}</div>
+		<div class="login-form-error-msg">{{ errorMessage }}</div>
+		<a-form ref="loginForm" :model="userInfo" class="login-form" layout="vertical" @submit="handleSubmit">
+			<a-form-item
+				field="username"
+				:rules="[{ required: true, message: '用户名不能为空' }]"
+				:validate-trigger="['change', 'blur']"
+				hide-label
+			>
+				<a-input v-model="userInfo.username" :placeholder="'用户名：admin'">
+					<template #prefix>
+						<icon-user />
+					</template>
+				</a-input>
+			</a-form-item>
+			<a-form-item
+				field="password"
+				:rules="[{ required: true, message: '密码不能为空' }]"
+				:validate-trigger="['change', 'blur']"
+				hide-label
+			>
+				<a-input-password v-model="userInfo.password" :placeholder="'密码：admin'" allow-clear>
+					<template #prefix>
+						<icon-lock />
+					</template>
+				</a-input-password>
+			</a-form-item>
+			<a-space :size="16" direction="vertical">
+				<div class="login-form-password-actions">
+					<a-checkbox
+						checked="rememberPassword"
+						:model-value="loginConfig.rememberPassword"
+						@change="setRememberPassword as any"
+					>
+						{{ '记住密码' }}
+					</a-checkbox>
+					<a-link>{{ '忘记密码' }}</a-link>
+				</div>
+				<a-button type="primary" html-type="submit" long :loading="loading">
+					{{ '登录' }}
+				</a-button>
+				<a-button type="text" long class="login-form-register-btn">
+					{{ '注册账号' }}
+				</a-button>
+			</a-space>
+		</a-form>
+	</div>
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue';
-  import { useRouter } from 'vue-router';
-  import { Message } from '@arco-design/web-vue';
-  import { ValidatedError } from '@arco-design/web-vue/es/form/interface';
-  import { useStorage } from '@vueuse/core';
-  import { useUserStore } from '@/stores';
-  import useLoading from '@/hooks/loading';
-  import type { LoginData } from '@/api/user';
+	import { ref, reactive } from 'vue';
+	import { useRouter } from 'vue-router';
+	import { Message } from '@arco-design/web-vue';
+	import { ValidatedError } from '@arco-design/web-vue/es/form/interface';
+	import { useStorage } from '@vueuse/core';
+	import { useUserStore } from '@/stores';
+	import useLoading from '@/hooks/loading';
+	import type { LoginData } from '@/api/user';
 
-  const router = useRouter();
-  const errorMessage = ref('');
-  const { loading, setLoading } = useLoading();
-  const userStore = useUserStore();
+	const router = useRouter();
+	const errorMessage = ref('');
+	const { loading, setLoading } = useLoading();
+	const userStore = useUserStore();
 
-  // https://vueuse.org/core/useStorage/
-  // 响应式的存储
-  const loginConfig = useStorage('login-config', {
-    rememberPassword: true,
-    username: 'admin',
-    password: 'admin',
-  });
-  const userInfo = reactive({
-    username: loginConfig.value.username,
-    password: loginConfig.value.password,
-  });
-  // 提交操作
-  const handleSubmit = async ({
-    errors,
-    values,
-  }: {
-    errors: Record<string, ValidatedError> | undefined;
-    values: Record<string, any>;
-  }) => {
-    // 如果正在加载中，说明已经点击，不重复提交
-    if (loading.value) return;
-    if (!errors) {
-      // 设置为true之后，按钮会显示 loading 加载 特效
-      setLoading(true);
-      try {
-        await userStore.login(values as LoginData);
-        // 登录后跳转到指定的页面
-        const { redirect, ...othersQuery } = router.currentRoute.value.query;
-        router.push({
-          name: (redirect as string) || 'Workplace',
-          query: {
-            ...othersQuery,
-          },
-        });
-        Message.success('欢迎使用');
-        const { rememberPassword } = loginConfig.value;
-        const { username, password } = values;
-        // 实际生产环境需要进行加密存储。
-        loginConfig.value.username = rememberPassword ? username : '';
-        loginConfig.value.password = rememberPassword ? password : '';
-      } catch (err) {
-        errorMessage.value = (err as Error).message;
-      } finally {
-        // 提交完成后，把 loading 加载状态取消
-        setLoading(false);
-      }
-    }
-  };
-  const setRememberPassword = (value: boolean) => {
-    loginConfig.value.rememberPassword = value;
-  };
+	// https://vueuse.org/core/useStorage/
+	// 响应式的存储
+	const loginConfig = useStorage('login-config', {
+		rememberPassword: true,
+		username: 'admin',
+		password: 'admin',
+	});
+	const userInfo = reactive({
+		username: loginConfig.value.username,
+		password: loginConfig.value.password,
+	});
+	// 提交操作
+	const handleSubmit = async ({
+		errors,
+		values,
+	}: {
+		errors: Record<string, ValidatedError> | undefined;
+		values: Record<string, any>;
+	}) => {
+		// 如果正在加载中，说明已经点击，不重复提交
+		if (loading.value) return;
+		if (!errors) {
+			// 设置为true之后，按钮会显示 loading 加载 特效
+			setLoading(true);
+			try {
+				await userStore.login(values as LoginData);
+				// 登录后跳转到指定的页面
+				const { redirect, ...othersQuery } = router.currentRoute.value.query;
+				router.push({
+					name: (redirect as string) || 'Workplace',
+					query: {
+						...othersQuery,
+					},
+				});
+				Message.success('欢迎使用');
+				const { rememberPassword } = loginConfig.value;
+				const { username, password } = values;
+				// 实际生产环境需要进行加密存储。
+				loginConfig.value.username = rememberPassword ? username : '';
+				loginConfig.value.password = rememberPassword ? password : '';
+			} catch (err) {
+				errorMessage.value = (err as Error).message;
+			} finally {
+				// 提交完成后，把 loading 加载状态取消
+				setLoading(false);
+			}
+		}
+	};
+	const setRememberPassword = (value: boolean) => {
+		loginConfig.value.rememberPassword = value;
+	};
 </script>
 
 <style lang="less" scoped>
-  .login-form {
-    &-wrapper {
-      width: 320px;
-    }
+	.login-form {
+		&-wrapper {
+			width: 320px;
+		}
 
-    &-title {
-      color: var(--color-text-1);
-      font-weight: 500;
-      font-size: 24px;
-      line-height: 32px;
-    }
+		&-title {
+			color: var(--color-text-1);
+			font-weight: 500;
+			font-size: 24px;
+			line-height: 32px;
+		}
 
-    &-sub-title {
-      color: var(--color-text-3);
-      font-size: 16px;
-      line-height: 24px;
-    }
+		&-sub-title {
+			color: var(--color-text-3);
+			font-size: 16px;
+			line-height: 24px;
+		}
 
-    &-error-msg {
-      height: 32px;
-      color: rgb(var(--red-6));
-      line-height: 32px;
-    }
+		&-error-msg {
+			height: 32px;
+			color: rgb(var(--red-6));
+			line-height: 32px;
+		}
 
-    &-password-actions {
-      display: flex;
-      justify-content: space-between;
-    }
+		&-password-actions {
+			display: flex;
+			justify-content: space-between;
+		}
 
-    &-register-btn {
-      color: var(--color-text-3) !important;
-    }
-  }
+		&-register-btn {
+			color: var(--color-text-3) !important;
+		}
+	}
 </style>
